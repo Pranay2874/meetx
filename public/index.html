@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Activity Booking</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h1>Activity Booking</h1>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" class="active">Home</a>
+        <a href="dashboard.html" id="dashboardLink" style="display:none;">Dashboard</a>
+        <a href="login.html" id="loginLink">Login</a>
+        <a href="register.html" id="registerLink">Register</a>
+        <a href="#" id="logoutLink" style="display:none;">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="hero">
+      <h2>Book Your Next Adventure</h2>
+      <p>Discover and book amazing activities in your area</p>
+    </section>
+
+    <section class="activities">
+      <h3>Featured Activities</h3>
+      <div class="activity-grid">
+        <div class="activity-card">
+          <img src="https://images.pexels.com/photos/3755440/pexels-photo-3755440.jpeg" alt="Soccer match" />
+          <div class="activity-content">
+            <h4>Soccer Match</h4>
+            <p>Join us for an exciting soccer match at the local stadium</p>
+            <div class="activity-details">
+              <span>$25</span>
+              <button>Book Now</button>
+            </div>
+          </div>
+        </div>
+        <!-- Add more activity cards -->
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2024 Activity Booking. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const token = localStorage.getItem("token");
+    const dashboardLink = document.getElementById("dashboardLink");
+    const loginLink = document.getElementById("loginLink");
+    const registerLink = document.getElementById("registerLink");
+    const logoutLink = document.getElementById("logoutLink");
+
+    if (token) {
+      dashboardLink.style.display = "inline";
+      loginLink.style.display = "none";
+      registerLink.style.display = "none";
+      logoutLink.style.display = "inline";
+
+      logoutLink.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        window.location.reload();
+      });
+    }
+  </script>
+</body>
+</html>

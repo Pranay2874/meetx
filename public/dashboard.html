@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .dashboard-section {
+      margin-top: 2rem;
+    }
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .card h4 {
+      margin: 0;
+      color: #2c3e50;
+    }
+    .card p {
+      color: #666;
+      margin: 0.5rem 0;
+    }
+    .btn {
+      padding: 0.4rem 0.8rem;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn.cancel {
+      background-color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome, <span id="userName">User</span></h1>
+
+    <section class="dashboard-section">
+      <h2>Upcoming Activities</h2>
+      <div id="activities"></div>
+    </section>
+
+    <section class="dashboard-section">
+      <h2>My Bookings</h2>
+      <div id="bookings"></div>
+    </section>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in first.");
+      window.location.href = "/";
+    }
+
+    async function fetchUser() {
+      const res = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById("userName").innerText = data.data.name;
+      }
+    }
+
+    async function fetchActivities() {
+      const res = await fetch("/api/activities?upcoming=true");
+      const data = await res.json();
+      const container = document.getElementById("activities");
+      if (data.success) {
+        container.innerHTML = data.data.map(activity => `
+          <div class="card">
+            <h4>${activity.title}</h4>
+            <p>${activity.description}</p>
+            <p><strong>${new Date(activity.dateTime).toLocaleString()}</strong> - ${activity.location} - ₹${activity.price}</p>
+            <button class="btn" onclick="bookActivity('${activity._id}')">Book Now</button>
+          </div>
+        `).join("");
+      }
+    }
+
+    async function fetchBookings() {
+      const res = await fetch("/api/bookings", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const container = document.getElementById("bookings");
+      if (data.success) {
+        container.innerHTML = data.data.map(booking => `
+          <div class="card">
+            <h4>${booking.activity.title}</h4>
+            <p>Booked on: ${new Date(booking.bookingDate).toLocaleDateString()}</p>
+            <p>Status: ${booking.status}</p>
+            ${booking.status === 'confirmed' ? `<button class="btn cancel" onclick="cancelBooking('${booking._id}')">Cancel</button>` : ''}
+          </div>
+        `).join("");
+      }
+    }
+
+    async function bookActivity(activityId) {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ activityId })
+      });
+      const result = await res.json();
+      alert(result.success ? " Booking successful!" : result.message || " Failed");
+      fetchBookings(); // refresh bookings
+    }
+
+    async function cancelBooking(bookingId) {
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const result = await res.json();
+      alert(result.success ? " Booking cancelled" : result.message || "Error");
+      fetchBookings();
+    }
+
+    fetchUser();
+    fetchActivities();
+    fetchBookings();
+  </script>
+</body>
+</html>
